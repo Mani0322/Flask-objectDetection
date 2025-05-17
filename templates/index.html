@@ -17,23 +17,73 @@
             </div>
         </div>
     </header>
-    <div class="container mt-5">
+    <div class="container mt-2">
         <div class="row">
             <div class="col">
-                <h4 class="text-dark px-3">Welcome to vehicle Detection!</h4>
-                <div class="card">
+                <h4 id ="sub-heading" class="text-dark px-3">Welcome to vehicle Detection!</h4>
+                <div class="card mt-3">
                     <div class="card-body">
                         <div class="input-group">
-                            <input type="file" class="form-control" id="inputGroupFile04" aria-describedby="inputGroupFileAddon04" aria-label="Upload">
-                            <button class="btn btn-outline-primary" type="button" id="inputGroupFileAddon04">Button</button>
+                            <input type="file" class="form-control" id="imageInput" aria-describedby="inputGroupFileAddon04" aria-label="Upload">
+                            <button class="btn btn-outline-primary" type="button" id="inputGroupFileAddon04" onclick="uploadAndDetect()">Button</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-
+        <div class="row mt-3">
+            <div class="col">
+                <div id="results"></div>
+                <img id="resultImage" style="max-width: 600px; height:300px; display: none">
+            </div>
+        </div>
     </div>
+    <footer class="p-3 bg-dark text-white fixed-bottom">
+        <div class="row">
+            <div class="col" id="foot-text">
+                <p>2025 Detection app. All Rights reserved</p>
+            </div>
+            <div class="col">
+                <ul>
+                    <li class="list-inline-item"><a class="text-white text-decoration-none" href="#">Terms of Services</a></li>
+                    <li class="list-inline-item"><a class="text-white text-decoration-none"  href="#">Privacy Policy</a></li>
+                    <li class="list-inline-item"><a class="text-white text-decoration-none" href="#">Sitemap</a></li>
+                </ul>
+
+            </div>
+        </div>
+    </footer>
     <script src="{{ url_for('static',filename='js/bootstrap.bundle.min.js')}}"></script>
 </body>
+<script>
+    function uploadAndDetect() {
+    const input = document.getElementById('imageInput');
+    const file = input.files[0];
+    if (!file) return alert("Select an image first.");
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    fetch('/detect', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Show detection results
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = "<h3>Detections:</h3>";
+        data.detections.forEach(obj => {
+            resultsDiv.innerHTML += `<p>${obj.class} (${obj.confidence})</p>`;
+        });
+
+        // Show image
+        const img = document.getElementById('resultImage');
+        img.src = `data:image/jpeg;base64,${data.image}`;
+        img.style.display = 'block';
+    })
+    .catch(err => console.error('Error:', err));
+}
+</script>
+
 </html>
